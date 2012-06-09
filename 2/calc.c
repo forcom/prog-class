@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <curses.h>
 
 #define max 10000000000
 
@@ -20,37 +21,30 @@ short sig = 0 ;
 short mem = 0 ;
 short ext = 0 ;
 
-void move_digit ( ) {
-	printf ( "\x1b[3;7H" ) ;
-}
-
-void move_signal ( ) {
-	printf ( "\x1b[3;6H" ) ;
-}
-
-void move_memory ( ) {
-	printf ( "\x1b[3;3H" ) ;
-}
-
 void print_init ( ) {
-	printf ( "\x1b[2J\x1b[0;0H" ) ;
-	puts ( "+====================+" ) ;
-	puts ( "|   +------------+   |" ) ;
-	puts ( "|   | 0123456789 |   |" ) ;
-	puts ( "|   +------------+   |" ) ;
-	puts ( "+--------------------+" ) ;
-	puts ( "| M R  M C  M +  M - |\tMR: M\tMC: R\tM+: P\tM-: Q" ) ;
-	puts ( "|                    |" ) ;
-	puts ( "| CLR  C E  +/-   X  |\tCLR: C\tCE: D\t+/-: S\tExit: X" ) ;
-	puts ( "|                    |" ) ;
-	puts ( "|  1    2    3    +  |" ) ;
-	puts ( "|                    |" ) ;
-	puts ( "|  4    5    6    -  |" ) ;
-	puts ( "|                    |" ) ;
-	puts ( "|  7    8    9    *  |" ) ;
-	puts ( "|                    |" ) ;
-	puts ( "|  0    .    =    /  |" ) ;
-	puts ( "+====================+\n" ) ;
+	initscr ( ) ;
+	printw ( "+====================+\n" ) ;
+	printw ( "|   +------------+   |\n" ) ;
+	printw ( "|   |            |   |\n" ) ;
+	printw ( "|   +------------+   |\n" ) ;
+	printw ( "+--------------------+\n" ) ;
+	printw ( "| M R  M C  M +  M - |\tMR: M\tMC: R\tM+: P\tM-: Q\n" ) ;
+	printw ( "|                    |\n" ) ;
+	printw ( "| CLR  C E  +/-   X  |\tCLR: C\tCE: D\t+/-: S\tExit: X\n" ) ;
+	printw ( "|                    |\n" ) ;
+	printw ( "|  1    2    3    +  |\n" ) ;
+	printw ( "|                    |\n" ) ;
+	printw ( "|  4    5    6    -  |\n" ) ;
+	printw ( "|                    |\n" ) ;
+	printw ( "|  7    8    9    *  |\n" ) ;
+	printw ( "|                    |\n" ) ;
+	printw ( "|  0    .    =    /  |\n" ) ;
+	printw ( "+====================+\n" ) ;
+}
+
+void print_term ( ) {
+	mvprintw ( 18 , 0 , "Thank you for using Calculator!! \n" ) ;
+	endwin ( ) ;
 }
 
 char * dtoa ( long double number ) {
@@ -107,28 +101,19 @@ char * dtoa ( long double number ) {
 
 void print_number ( ) {
 	char t [ 100 ] ;
-	move_digit ( ) ;
 	if ( cur >= max ) {
-		printf ( "!OVERFLOW!" ) ;
+		mvprintw ( 2 , 6 , "!OVERFLOW!" ) ;
 	}
 	else {
-		printf ( "%10s\n" , dtoa(cur) ) ;
+		mvprintw ( 2 , 6 , "%10s" , dtoa(cur) ) ;
 	}
 
-	move_signal ( ) ;
-	printf ( "%c" , sig ? '-' : ' ' ) ;
-
-	printf ( "\x1b[18;0H" ) ;
+	mvprintw ( 2 , 5 , "%c" , sig ? '-' : ' ' ) ;
 }
 
 void input ( ) {
-	fflush ( stdin ) ;
-	char c = getchar ( ) ;
-	if ( task ) {
-		cur = 0 ;
-		task = 0 ;
-		sig = 0 ;
-	}
+	char c = mvgetch ( 18 , 0 ) ;
+	mvprintw ( 18 , 0 , " " ) ;
 	switch ( c ) {
 		case '0' :
 		case '1' :
@@ -141,6 +126,7 @@ void input ( ) {
 		case '8' :
 		case '9' :
 			cur = ( cur * 10 + c - '0' ) / ( dot ? 10 : 1 ) ;
+			print_number ( ) ;
 			break ;
 		case '.' :
 			dot = 1 ;
@@ -199,19 +185,16 @@ void input ( ) {
 		case 'R' :
 		case 'r' :
 			memory = 0 ;
-			move_memory ( ) ;
-			printf ( " " ) ;
+			mvprintw ( 2 , 3 , " " ) ;
 			break ;
 		case 'P' :
 		case 'p' :
-			move_memory ( ) ;
-			printf ( "M" ) ;
+			mvprintw ( 2 , 3 , "M" ) ;
 			memory += cur ;
 			break ;
 		case 'Q' :
 		case 'q' :
-			move_memory ( ) ;
-			printf ( "M" ) ;
+			mvprintw ( 2 , 3 , "M" ) ;
 			memory -= cur ;
 			break ;
 		case 'C' :
@@ -238,8 +221,8 @@ void input ( ) {
 int main ( ) {
 	print_init ( ) ;
 	while ( ! ext ) {
-		print_number ( ) ;
 		input ( ) ;
 	}
+	print_term ( ) ;
 	return 0 ;
 }
