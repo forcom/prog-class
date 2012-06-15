@@ -4,8 +4,6 @@
 #include <curses.h>
 #include <memory.h>
 
-#define max 10000000000
-
 #define NOTHING 0
 #define PLUS 1
 #define MINUS 2
@@ -25,6 +23,7 @@ short mem = 0;
 short ext = 0;
 short lock = 0;
 
+short inp_sig = 0;
 char inpnum [ 12 ];
 int length;
 
@@ -50,7 +49,7 @@ void print_init() {
 }
 
 void print_term() {
-    mvprintw(18, 1, "Thank you for using Calculator!! \n");
+    printw("Thank you for using Calculator!! \n");
     endwin();
 }
 
@@ -81,10 +80,16 @@ char * number_to_string(long double number) {
     // Change integer to char array r1.
     ptr = r1;
 
-    while (r != 0) {
+    while (r != 0 && ptr - r1 < 10) {
         * ptr++ = r % 10 + '0';
         r /= 10;
     }
+
+    if (r != 0) {
+        lock = 1;
+        return "!OVERFLOW!";
+    }
+
     if (ptr == r1) {
         * ptr++ = '0';
     }
@@ -113,7 +118,7 @@ char * number_to_string(long double number) {
         ptr2 = res;
         while (* ptr2++ != '.');
         if (ptr2 - res > 11) {
-            num_init();
+            lock = 1;
             return "!OVERFLOW!";
         }
         res [ 10 ] = 0;
@@ -131,14 +136,16 @@ char * number_to_string(long double number) {
 
 void num_clear() {
     dot = 0;
-
+    inp_sig = 0;
     length = 0;
     memset(inpnum, 0, sizeof ( inpnum));
     inpnum [ 0 ] = '0';
 }
 
 void num_init() {
+    lock = 0;
     result = 0;
+    cur_task = NOTHING;
     num_clear();
 }
 
@@ -148,11 +155,12 @@ void memory_clear() {
 }
 
 void print_input() {
-    mvprintw(2, 5, " %10s", inpnum);
+    mvprintw(2, 5, "%c%10s", inp_sig ? '-' : ' ', inpnum);
     cur_print = 0;
 }
 
 void print_result() {
+    if (lock) return;
     num_clear();
     mvprintw(2, 5, "%c%10s", result >= 0 ? ' ' : '-', number_to_string(result));
     cur_print = 1;
@@ -162,24 +170,24 @@ void pre_calc() {
     double r;
     switch (cur_task) {
         case NOTHING:
-            result = atof(inpnum);
+            result = atof(inpnum) * (inp_sig ? -1 : 1);
             break;
         case PLUS:
-            result += atof(inpnum);
+            result += atof(inpnum) * (inp_sig ? -1 : 1);
             break;
         case MINUS:
-            result -= atof(inpnum);
+            result -= atof(inpnum) * (inp_sig ? -1 : 1);
             break;
         case TIME:
-            result *= atof(inpnum);
+            result *= atof(inpnum) * (inp_sig ? -1 : 1);
             break;
         case DIVIDE:
-            r = atof(inpnum);
+            r = atof(inpnum) * (inp_sig ? -1 : 1);
             if (r == 0.0) {
-                num_init();
+                lock = 1;
                 mvprintw(2, 6, "!DIVIDE 0!");
             } else {
-                result /= atof(inpnum);
+                result /= r;
             }
             break;
         case EQUAL:
@@ -189,7 +197,7 @@ void pre_calc() {
 
 void input() {
     char c = mvgetch(18, 0);
-    mvprintw(18, 0, " ");
+    mvprintw(18, 0, "   ");
 
     switch (c) {
         case '.':
@@ -199,7 +207,10 @@ void input() {
             if (!length) ++ length;
         case '0':
             if (lock)break;
-            if (length == 0) break;
+            if (length == 0) {
+                print_input();
+                break;
+            }
         case '1':
         case '2':
         case '3':
@@ -220,59 +231,64 @@ void input() {
             }
             break;
         case '+':
+            if (lock) break;
             pre_calc();
             print_result();
             cur_task = PLUS;
-            lock = 0;
             break;
         case '-':
+            if (lock)break;
             pre_calc();
             print_result();
             cur_task = MINUS;
-            lock = 0;
             break;
         case '*':
+            if (lock)break;
             pre_calc();
             print_result();
             cur_task = TIME;
-            lock = 0;
             break;
         case '/':
+            if (lock)break;
             pre_calc();
             print_result();
             cur_task = DIVIDE;
-            lock = 0;
             break;
         case '=':
         case '\n':
         case '\r':
+            if (lock)break;
             pre_calc();
             print_result();
             cur_task = EQUAL;
-            lock = 0;
             break;
         case 'M':
         case 'm':
+            if (lock)break;
             if (cur_task == EQUAL) {
                 num_clear();
                 cur_task = NOTHING;
             }
+            if (memory < 0) inp_sig = 1;
             strcpy(inpnum, number_to_string(memory));
             length = strlen(inpnum);
             print_input();
             break;
         case 'R':
         case 'r':
+            if (lock)break;
             memory_clear();
             mvprintw(2, 2, " ");
             break;
         case 'P':
         case 'p':
+            if (lock)break;
             mvprintw(2, 2, "M");
             memory += (cur_print ? result : atof(inpnum));
             break;
         case 'Q':
         case 'q':
+            if (lock)break;
             mvprintw(2, 2, "M");
             memory -= (cur_print ? result : atof(inpnum));
             break;
@@ -283,6 +299,7 @@ void input() {
             break;
         case 'D':
         case 'd':
+            if (lock)break;
             num_clear();
             print_input();
             break;
