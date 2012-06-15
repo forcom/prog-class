@@ -270,9 +270,16 @@ void input() {
         // A dot should be used only once.
         case '.':
             if (lock)break;
+            if (cur_task == EQUAL) {
+                num_clear();
+                cur_task = NOTHING;
+            }
             if (dot) break;
             dot = 1;
             if (!length) ++ length;
+            inpnum [ length ++ ] = c;
+            print_input();
+            break;
         // Zero cannot be more than 1 in front of a number.
         case '0':
             if (lock)break;
