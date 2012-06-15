@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
 #include <curses.h>
 
 #define max 10000000000
@@ -58,52 +58,57 @@ char * strrev ( char * str ) {
 }
 
 char * number_to_string ( long double number ) {
-	char res [ 12 ] ;
-	short signal ;
-	if ( number < 0 ) {
-		signal = 1 ;
-		number *= - 1 ;
-	}
+	if ( number < 0 ) number = -number ;
+	number += 0.000000005 ;
 
+	char res [ 15 ] ;
+	char r1 [ 11 ] ;
+	char r2 [ 11 ] ;
 	long long r = number ;
 	long double z = number - r ;
-	char * ptr = res , * f = res , * t ;
-	
-	* ptr ++ = signal ? '-' : ' ' ;
+	char * ptr ;
+
+	// Change integer to char array r1.
+	ptr = r1 ;
 
 	while ( r != 0 ) {
 		* ptr ++ = r % 10 + '0' ;
 		r /= 10 ;
 	}
+	if ( ptr == r1 ) {
+		* ptr ++ = '0' ;
+	}
 	* ptr = 0;
 
-	strrev ( res + 1 ) ;
+	strrev ( r1 ) ;
 
-	if ( ptr == res ) {
-		* ptr ++ = '0' ;
-		* ptr = 0 ;
-	}
+	// Change double to char array r2
+	ptr = r2 ;
 
-
-	if ( z == 0.0 ) return res ;
-	* ptr ++ = '.' ;
-
-	if ( ptr - res == 11 ) { 
-		* ( -- ptr ) = 0 ;
-		return res ;
-	}
-
-	while ( ( ptr - res ) < 10 && z != 0.0 ) {
+	while ( ( ptr - r2 ) < 8 ) {
 		z *= 10 ;
 		* ptr ++ = (int)z + '0';
 		z -= (int)z ;
 	}
 	* ptr = 0 ;
-	-- ptr ;
-	while ( * ptr == '0' ) {
-		* ptr = 0 ;
-		-- ptr ;
+
+	strcat ( res , r1 ) ;
+	strcat ( res , "." ) ;
+	strcat ( res , r2 ) ;
+
+	ptr = res ;
+	while ( * ( ptr ++ ) ) ;
+
+	if ( ptr - res > 10 ) {
+		res [ 10 ] = 0 ;
+		ptr = res + 10 ;
 	}
+
+	while ( * ( -- ptr ) == '0' && ptr >= res )
+		* ptr = 0 ;
+	++ ptr ;
+
+	if ( * ( ptr - 1 ) == '.' ) * ptr = 0 ;
 
 	return res ;
 }
@@ -114,7 +119,13 @@ void print_number ( ) {
 		mvprintw ( 2 , 6 , "!OVERFLOW!" ) ;
 	}
 	else {
-		mvprintw ( 2 , 5 , "%11s" , number_to_string(cur) ) ;
+		if ( cur >= 0 ) {
+			mvprintw ( 2 , 5 , " " ) ;
+		}
+		else {
+			mvprintw ( 2 , 5 , "-" ) ;
+		}
+		mvprintw ( 2 , 6 , "%10s" , number_to_string(cur) ) ;
 	}
 }
 
