@@ -17,7 +17,6 @@ short task = 0 ;
 short comp = 0 ;
 long double cur = 0.0 ;
 short dot = 0 ;
-short sig = 0 ;
 short mem = 0 ;
 short ext = 0 ;
 
@@ -47,16 +46,30 @@ void print_term ( ) {
 	endwin ( ) ;
 }
 
-char * dtoa ( long double number ) {
+char * strrev ( char * str ) {
+	char * f = str - 1 , * t = str ;
+
+	while ( * t ) ++ t ;
+
+	while ( ++ f < -- t )
+		* f ^= * t ^= * f ^= * t ;
+
+	return str ;
+}
+
+char * number_to_string ( long double number ) {
+	char res [ 12 ] ;
+	short signal ;
 	if ( number < 0 ) {
-		sig = 1 ;
+		signal = 1 ;
 		number *= - 1 ;
 	}
 
-	char res [ 11 ] ;
 	long long r = number ;
 	long double z = number - r ;
 	char * ptr = res , * f = res , * t ;
+	
+	* ptr ++ = signal ? '-' : ' ' ;
 
 	while ( r != 0 ) {
 		* ptr ++ = r % 10 + '0' ;
@@ -64,22 +77,18 @@ char * dtoa ( long double number ) {
 	}
 	* ptr = 0;
 
-	t = ptr - 1 ;
-	while ( f < t ) {
-		* f ^= * t ^= * f ^= * t ;
-		++ f ;
-		-- t ;
-	}
+	strrev ( res + 1 ) ;
 
 	if ( ptr == res ) {
 		* ptr ++ = '0' ;
 		* ptr = 0 ;
 	}
 
+
 	if ( z == 0.0 ) return res ;
 	* ptr ++ = '.' ;
 
-	if ( ptr - res == 10 ) { 
+	if ( ptr - res == 11 ) { 
 		* ( -- ptr ) = 0 ;
 		return res ;
 	}
@@ -105,10 +114,8 @@ void print_number ( ) {
 		mvprintw ( 2 , 6 , "!OVERFLOW!" ) ;
 	}
 	else {
-		mvprintw ( 2 , 6 , "%10s" , dtoa(cur) ) ;
+		mvprintw ( 2 , 5 , "%11s" , number_to_string(cur) ) ;
 	}
-
-	mvprintw ( 2 , 5 , "%c" , sig ? '-' : ' ' ) ;
 }
 
 void input ( ) {
@@ -132,25 +139,26 @@ void input ( ) {
 			dot = 1 ;
 			break ;
 		case '+' :
-			result += cur * ( sig ? -1 : 1 ) ;
+			result += cur ;
 			cur = result ;
 			task = 1 ;
 			cur_task = PLUS ;
+			dot = 0 ;
 			break ;
 		case '-' :
-			result -= cur * ( sig ? -1 : 1 ) ;
+			result -= cur ;
 			cur = result ;
 			task = 1 ;
 			cur_task = MINUS ;
 			break ;
 		case '*' :
-			result *= cur * ( sig ? -1 : 1 ) ;
+			result *= cur ;
 			cur = result ;
 			task = 1 ;
 			cur_task = TIME ;
 			break ;
 		case '/' :
-			result /= cur * ( sig ? -1 : 1 ) ;
+			result /= cur ;
 			cur = result ;
 			task = 1 ;
 			cur_task = DIVIDE ;
@@ -158,16 +166,16 @@ void input ( ) {
 		case '=' :
 			switch ( cur_task ) {
 				case PLUS :
-					result += cur * ( sig ? -1 : 1 ) ;
+					result += cur ;
 					break ;
 				case MINUS :
-					result -= cur * ( sig ? -1 : 1 ) ;
+					result -= cur ;
 					break ;
 				case TIME :
-					result *= cur * ( sig ? -1 : 1 ) ;
+					result *= cur ;
 					break ;
 				case DIVIDE :
-					result /= cur * ( sig ? -1 : 1 ) ;
+					result /= cur ;
 					break ;
 				default :
 					result = cur ;
@@ -207,7 +215,7 @@ void input ( ) {
 			break ;
 		case 'S' :
 		case 's' :
-			sig ^= 1 ;
+			cur = - cur ;
 			break ;
 		case 'X' :
 		case 'x' :
