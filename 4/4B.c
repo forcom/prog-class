@@ -16,16 +16,25 @@
 #include <stdio.h>
 #include <memory.h>
 
+/// swap( a, b )
+///     description : Swap two variables.
 #define swap(a,b) a^=b^=a^=b
 
-int num [ 10 ] = { 1 , 0 , 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9 } ;
+int num [ 10 ] = { 1 , 0 , 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9 } ; // for permutation
 
-void reverse ( int x , int y ) {
-    -- y;
+/// short reverse ( int x , int y )
+///     description : Reverse the permutation between x and y
+///     argument :
+///         x : Index of the first element.
+void reverse ( int x ) {
+    int y = 9 ;
     while ( x < y )
         swap ( num [ x ++ ] , num [ y -- ] ) ;
 }
 
+/// short next_permutation ( )
+///     description : Get the next permutation
+///     result : Returns 1 when there is a next permutation, otherwise 0.
 short next_permutation ( ) {
     int first = 0 , last = 10 ;
     int i = last - 1 ;
@@ -38,16 +47,21 @@ short next_permutation ( ) {
             i2 = last;
             while ( !( num [ i ] < num [ --i2 ] ) );
             swap ( num [ i ] , num [ i2 ] ) ;
-            reverse(i1, last);
+            reverse ( i1 ) ;
             return 1;
         }
         if (i == first) {
-            reverse(first, last);
+            reverse ( first ) ;
             return 0 ;
         }
     }
 }
 
+/// short check ( long long x )
+///     description : Check if the number has all digits.
+///     argument :
+///         x : A number to check.
+///     result : Returns 1 when the number has all digits, otherwise 0.
 short check ( long long x ) {
     short check [ 10 ] ;
     memset ( check , 0 , sizeof ( check ) ) ;
@@ -61,9 +75,12 @@ short check ( long long x ) {
     return 1 ;
 }
 
+/// int main ( int argc, char ** argv )
+///     description : Entry point of cipher.
+///     return : Returns 0 when the job is succeed.
 int main( ) {
     long long x , y , z ;
-    int i ;
+    int i , cnt = 0 ;
     do {
         x = 0 ;
         y = 0 ;
@@ -75,7 +92,8 @@ int main( ) {
         z = x * y ;
         if ( x < 10000 || y < 10000 || z < 1000000000 || ! check ( z ) ) continue ;
         printf ( "%lld * %lld = %lld\n" , x , y , z ) ;
+        ++ cnt ;
     } while ( next_permutation ( num , num + 10 ) ) ;
+    printf ( "Count : %d\n" , cnt ) ;
     return 0;
 }
-
