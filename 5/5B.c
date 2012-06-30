@@ -133,7 +133,7 @@ void make_expression ( int lev ) {
 	}
 
 	// Add MINUS
-		// But the first one can be negative.
+	// But the first one can be negative.
 	if ( ! cur || ( cur && que [ cur - 1 ] > 0 ) ) {
 		que [ cur ++ ] = MINUS ;
 		make_expression ( lev ) ;
@@ -144,7 +144,7 @@ void make_expression ( int lev ) {
 
 /// int main ( )
 ///     description : Entry point of cipher.
-///     return : Returns 0 when the job is succeed.
+///     result : Returns 0 when the job is succeed.
 int main ( ) {
 	make_expression ( 1 ) ;
 	printf ( " Count : %d\n" , cnt ) ;
