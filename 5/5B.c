@@ -1,6 +1,6 @@
 ///
 ///  5B.c
-///      Insert operators +, -, + between 123456789, and make 100.
+///      Insert operators +, -, * between 123456789, and make 100.
 ///
 ///      Finding all these equations.
 ///
