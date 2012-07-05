@@ -98,11 +98,11 @@ char * strrev(char * str) {
 ///     argument :
 ///         number : A number to convert.
 ///     result : Converted character array.
-char * number_to_string(long double number) {
+char * number_to_string(long double number, char * res) {
     if (number < 0) number = -number; // get an absolute value.
     number += 0.000000005; // upper under 10 digits.
 
-    char res [ 15 ]; // result string
+//    char res [ 15 ]; // result string
     char r1 [ 11 ]; // decimal part
     char r2 [ 11 ]; // fraction part
     long long r = number; // get decimal part
@@ -219,7 +219,8 @@ void print_input() {
 void print_result() {
     if (lock) return;
     num_clear();
-    mvprintw(2, 5, "%c%10s", result >= 0 ? ' ' : '-', number_to_string(result));
+    char res [ 15 ] ;
+    mvprintw(2, 5, "%c%10s", result >= 0 ? ' ' : '-', number_to_string(result,res));
     cur_print = 1;
 }
 
@@ -258,6 +259,7 @@ void pre_calc() {
 /// void input()
 ///     description : Input a key and process it.
 void input() {
+    char res [ 15 ] ;
     char c = mvgetch(18, 0);
     mvprintw(18, 0, "   ");
 
@@ -351,7 +353,7 @@ void input() {
             }
             // If the memorized value is under 0, set sign. => Input number cannot be negative.
             if (memory < 0) inp_sig = 1;
-            strcpy(inpnum, number_to_string(memory));
+            strcpy(inpnum, number_to_string(memory, res));
             length = strlen(inpnum);
             print_input();
             break;
