@@ -11,7 +11,7 @@
 ///
 ///      $ cc -o 4B -lm 4B.c
 ///
-///  Written by Yoon, SeungYong, 2012. 06. 29.
+///  Written by Yoon, SeungYong, 2012. 07. 10.
 ///
 #include <stdio.h>
 #include <memory.h>
@@ -20,7 +20,7 @@
 ///     description : Swap two variables.
 #define swap(a,b) a^=b^=a^=b
 
-int num [ 10 ] = { 1 , 0 , 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9 } ; // for permutation
+int num [ 10 ] = { 0 , 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9 } ; // for permutation
 
 /// short reverse ( int x , int y )
 ///     description : Reverse the permutation between x and y
@@ -28,8 +28,11 @@ int num [ 10 ] = { 1 , 0 , 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9 } ; // for permutation
 ///         x : Index of the first element.
 void reverse ( int x ) {
     int y = 9 ;
-    while ( x < y )
-        swap ( num [ x ++ ] , num [ y -- ] ) ;
+    while ( x < y ) {
+        swap ( num [ x ] , num [ y ] ) ;
+        ++ x ;
+        -- y ;
+    }
 }
 
 /// short next_permutation ( )
@@ -82,7 +85,7 @@ int main( ) {
     long long x , y , z ;
     int i , cnt = 0 ;
     do {
-        x = 0 ;
+	x = 0 ;
         y = 0 ;
         z = 0 ;
         for ( i = 0 ; i < 5 ; ++ i ) {
